@@ -165,6 +165,10 @@ public class AppPreferences {
 			Direction.NORTH.toString()));
 	public static final PrefMonitor<String> REFRESH_RATE = create(
 			new PrefMonitorStringOpts("windowRefreshRate", new String[] { "20", "30", "60", "120", "144" }, "60"));
+	private static final String UI_SCALE_PROPERTY = "logisim.uiScale";
+	private static final double UI_SCALE_MIN = 0.5;
+	private static final double UI_SCALE_MAX = 4.0;
+	public static final PrefMonitor<Double> UI_SCALE = create(new PrefMonitorDouble("uiScale", getDefaultUiScale()));
 	// Layout preferences
 	public static final String ADD_AFTER_UNCHANGED = "unchanged";
 	public static final String ADD_AFTER_EDIT = "edit";
@@ -431,6 +435,47 @@ public class AppPreferences {
 			}
 		} catch (Throwable t) {
 		}
+	}
+
+	private static double clampUiScale(double value) {
+		if (Double.isNaN(value) || Double.isInfinite(value)) {
+			return 1.0;
+		}
+		if (value < UI_SCALE_MIN) {
+			return UI_SCALE_MIN;
+		}
+		if (value > UI_SCALE_MAX) {
+			return UI_SCALE_MAX;
+		}
+		return value;
+	}
+
+	private static double getDefaultUiScale() {
+		String fromProperty = System.getProperty(UI_SCALE_PROPERTY);
+		if (fromProperty != null) {
+			try {
+				return clampUiScale(Double.parseDouble(fromProperty.trim()));
+			} catch (NumberFormatException e) {
+				return 1.0;
+			}
+		}
+		return 2.0;
+	}
+
+	public static double getScaled(double value) {
+		return value * getUiScaleFactor();
+	}
+
+	public static float getScaled(float value) {
+		return (float) getScaled((double) value);
+	}
+
+	public static int getScaled(int value) {
+		return Math.max(1, (int) Math.round(getScaled((double) value)));
+	}
+
+	public static double getUiScaleFactor() {
+		return clampUiScale(UI_SCALE.get().doubleValue());
 	}
 
 	public static void removePropertyChangeListener(PropertyChangeListener listener) {

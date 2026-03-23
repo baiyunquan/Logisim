@@ -15,6 +15,7 @@ import javax.swing.Icon;
 
 import com.cburch.draw.toolbar.ToolbarItem;
 import com.cburch.logisim.gui.menu.LogisimMenuItem;
+import com.cburch.logisim.prefs.AppPreferences;
 import com.cburch.logisim.util.Icons;
 import com.cburch.logisim.util.StringGetter;
 
@@ -40,11 +41,12 @@ class LogisimToolbarItem implements ToolbarItem {
 	@Override
 	public Dimension getDimension(Object orientation) {
 		if (icon == null) {
-			return new Dimension(16, 16);
+			int size = AppPreferences.getScaled(16);
+			return new Dimension(size, size);
 		} else {
 			int w = icon.getIconWidth();
 			int h = icon.getIconHeight();
-			return new Dimension(w, h + 2);
+			return new Dimension(AppPreferences.getScaled(w), AppPreferences.getScaled(h + 2));
 		}
 	}
 
@@ -64,20 +66,35 @@ class LogisimToolbarItem implements ToolbarItem {
 
 	@Override
 	public void paintIcon(Component destination, Graphics g) {
-		if (!isSelectable() && g instanceof Graphics2D) {
+		Graphics gToUse = g;
+		Graphics2D g2 = null;
+		double scale = AppPreferences.getUiScaleFactor();
+		if (g instanceof Graphics2D) {
+			g2 = (Graphics2D) g.create();
+			gToUse = g2;
+			if (scale != 1.0) {
+				g2.scale(scale, scale);
+			}
+		}
+
+		if (!isSelectable() && gToUse instanceof Graphics2D) {
 			Composite c = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.3f);
-			((Graphics2D) g).setComposite(c);
+			((Graphics2D) gToUse).setComposite(c);
 		}
 
 		if (icon == null) {
-			g.setColor(new Color(255, 128, 128));
-			g.fillRect(4, 4, 8, 8);
-			g.setColor(Color.BLACK);
-			g.drawLine(4, 4, 12, 12);
-			g.drawLine(4, 12, 12, 4);
-			g.drawRect(4, 4, 8, 8);
+			gToUse.setColor(new Color(255, 128, 128));
+			gToUse.fillRect(4, 4, 8, 8);
+			gToUse.setColor(Color.BLACK);
+			gToUse.drawLine(4, 4, 12, 12);
+			gToUse.drawLine(4, 12, 12, 4);
+			gToUse.drawRect(4, 4, 8, 8);
 		} else {
-			icon.paintIcon(destination, g, 0, 1);
+			icon.paintIcon(destination, gToUse, 0, 1);
+		}
+
+		if (g2 != null) {
+			g2.dispose();
 		}
 	}
 

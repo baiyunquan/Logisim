@@ -418,6 +418,17 @@ public class SelectTool extends Tool {
 		curDy = 0;
 		moveGesture = null;
 
+		// Handle right-click (BUTTON3) to clear selection
+		if (e.getButton() == MouseEvent.BUTTON3) {
+			if (!sel.isEmpty()) {
+				Action act = SelectionActions.dropAll(sel);
+				if (act != null) {
+					proj.doAction(act);
+				}
+			}
+			return;
+		}
+
 		// if the user clicks into the selection,
 		// selection is being modified
 		Collection<Component> in_sel = sel.getComponentsContaining(start, g);

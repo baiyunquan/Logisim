@@ -4,6 +4,7 @@
 package com.cburch.logisim.gui.main;
 
 import java.awt.Color;
+import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Point;
 import java.awt.dnd.DnDConstants;
@@ -560,41 +561,50 @@ public class ProjectExplorer extends JTree implements LocaleListener {
 
 		@Override
 		public int getIconHeight() {
-			return 20;
+			return AppPreferences.getScaled(20);
 		}
 
 		@Override
 		public int getIconWidth() {
-			return 20;
+			return AppPreferences.getScaled(20);
 		}
 
 		@Override
 		public void paintIcon(java.awt.Component c, Graphics g, int x, int y) {
+			double scale = AppPreferences.getUiScaleFactor();
+			int sx = (int) Math.round(x / scale);
+			int sy = (int) Math.round(y / scale);
+			Graphics gScaled = g.create();
+			if (gScaled instanceof java.awt.Graphics2D && scale != 1.0) {
+				((java.awt.Graphics2D) gScaled).scale(scale, scale);
+			}
+
 			// draw halo if appropriate
 			if (tool == haloedTool && AppPreferences.ATTRIBUTE_HALO.getBoolean()) {
-				g.setColor(Canvas.HALO_COLOR);
-				g.fillRoundRect(x, y, getIconWidth(), getIconHeight(), 5, 5);
-				g.setColor(Color.BLACK);
+				gScaled.setColor(Canvas.HALO_COLOR);
+				gScaled.fillRoundRect(sx, sy, 20, 20, 5, 5);
+				gScaled.setColor(Color.BLACK);
 			}
 
 			// draw tool icon
-			Graphics gIcon = g.create();
-			ComponentDrawContext context = new ComponentDrawContext(ProjectExplorer.this, null, null, g, gIcon);
-			tool.paintIcon(context, x, y);
+			Graphics gIcon = gScaled.create();
+			ComponentDrawContext context = new ComponentDrawContext(ProjectExplorer.this, null, null, gScaled, gIcon);
+			tool.paintIcon(context, sx, sy);
 			gIcon.dispose();
 
 			// draw magnifying glass if appropriate
 			if (circ == proj.getCurrentCircuit()) {
-				int tx = x + 13;
-				int ty = y + 13;
-				int[] xp = { tx - 1, x + 18, x + 20, tx + 1 };
-				int[] yp = { ty + 1, y + 20, y + 18, ty - 1 };
-				g.setColor(MAGNIFYING_INTERIOR);
-				g.fillOval(x + 5, y + 5, 10, 10);
-				g.setColor(Color.darkGray);
-				g.drawOval(x + 5, y + 5, 10, 10);
-				g.fillPolygon(xp, yp, xp.length);
+				int tx = sx + 13;
+				int ty = sy + 13;
+				int[] xp = { tx - 1, sx + 18, sx + 20, tx + 1 };
+				int[] yp = { ty + 1, sy + 20, sy + 18, ty - 1 };
+				gScaled.setColor(MAGNIFYING_INTERIOR);
+				gScaled.fillOval(sx + 5, sy + 5, 10, 10);
+				gScaled.setColor(Color.darkGray);
+				gScaled.drawOval(sx + 5, sy + 5, 10, 10);
+				gScaled.fillPolygon(xp, yp, xp.length);
 			}
+			gScaled.dispose();
 		}
 	}
 
@@ -629,6 +639,10 @@ public class ProjectExplorer extends JTree implements LocaleListener {
 		selector.setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
 		setSelectionModel(selector);
 		setCellRenderer(renderer);
+		Font baseFont = getFont();
+		if (baseFont != null) {
+			setFont(baseFont.deriveFont(AppPreferences.getScaled(baseFont.getSize2D())));
+		}
 		JTreeUtil.configureDragAndDrop(this, new DragController());
 		addTreeSelectionListener(myListener);
 

@@ -7,6 +7,7 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Container;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.GraphicsConfiguration;
 import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
@@ -20,6 +21,8 @@ import java.beans.PropertyChangeListener;
 import java.io.File;
 
 import javax.swing.JOptionPane;
+import javax.swing.JMenu;
+import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.WindowConstants;
 import javax.swing.event.ChangeEvent;
@@ -345,6 +348,8 @@ public class Frame extends LFrame implements LocaleListener {
 		mainRegion = new VerticalSplitPane(leftRegion, mainPanelSuper,
 				AppPreferences.WINDOW_MAIN_SPLIT.get().doubleValue());
 
+		applyUiScaleToMenuBar();
+
 		getContentPane().add(mainRegion, BorderLayout.CENTER);
 
 		computeTitle();
@@ -371,6 +376,39 @@ public class Frame extends LFrame implements LocaleListener {
 		((MenuListener.EnabledListener) projectToolbarModel).menuEnableChanged(menuListener);
 
 		LocaleManager.addLocaleListener(this);
+	}
+
+	private void applyScaledFont(java.awt.Component component) {
+		if (component == null) {
+			return;
+		}
+		Font baseFont = component.getFont();
+		if (baseFont != null) {
+			component.setFont(baseFont.deriveFont(AppPreferences.getScaled(baseFont.getSize2D())));
+		}
+	}
+
+	private void applyUiScaleToMenuBar() {
+		applyScaledFont(menubar);
+		for (int i = 0; i < menubar.getMenuCount(); i++) {
+			JMenu menu = menubar.getMenu(i);
+			if (menu != null) {
+				applyScaledFont(menu);
+				applyUiScaleToMenuItems(menu);
+			}
+		}
+	}
+
+	private void applyUiScaleToMenuItems(JMenu menu) {
+		for (int i = 0; i < menu.getItemCount(); i++) {
+			JMenuItem item = menu.getItem(i);
+			if (item != null) {
+				applyScaledFont(item);
+				if (item instanceof JMenu) {
+					applyUiScaleToMenuItems((JMenu) item);
+				}
+			}
+		}
 	}
 
 	private void computeTitle() {

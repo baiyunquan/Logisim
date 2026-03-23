@@ -6,6 +6,7 @@ package com.cburch.logisim.gui.generic;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
@@ -32,7 +33,8 @@ public class ZoomControl extends JPanel {
 
 		public GridIcon() {
 			addMouseListener(this);
-			setPreferredSize(new Dimension(15, 15));
+			int iconSize = AppPreferences.getScaled(15);
+			setPreferredSize(new Dimension(iconSize, iconSize));
 			setToolTipText("Show grid");
 			setFocusable(true);
 		}
@@ -179,6 +181,10 @@ public class ZoomControl extends JPanel {
 		spinnerModel = new SpinnerModel();
 		spinner = new JSpinner();
 		spinner.setModel(spinnerModel);
+		Font spinnerFont = spinner.getFont();
+		if (spinnerFont != null) {
+			spinner.setFont(spinnerFont.deriveFont(AppPreferences.getScaled(spinnerFont.getSize2D())));
+		}
 		this.add(spinner, BorderLayout.CENTER);
 
 		grid = new GridIcon();

@@ -24,7 +24,7 @@ class PrefOption {
 
 	private StringGetter getter;
 
-	PrefOption(String value, StringGetter getter) {
+	PrefOption(Object value, StringGetter getter) {
 		this.value = value;
 		this.getter = getter;
 	}

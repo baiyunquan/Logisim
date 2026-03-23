@@ -29,6 +29,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JViewport;
+import javax.swing.SwingUtilities;
 import javax.swing.event.MouseInputListener;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
@@ -83,13 +84,23 @@ public class Canvas extends JPanel implements LocaleListener, CanvasPaneContents
 			implements MouseInputListener, KeyListener, PopupMenuListener, PropertyChangeListener, MouseWheelListener {
 		boolean menu_on = false;
 
+		private float getGlobalFontScale() {
+			return 1.0f;
+		}
+
 		private Tool getToolFor(MouseEvent e) {
 			if (menu_on)
 				return null;
 
+			Tool current = proj.getTool();
+			if (current instanceof AddTool
+					&& (SwingUtilities.isRightMouseButton(e) || e.isPopupTrigger())) {
+				return current;
+			}
+
 			Tool ret = mappings.getToolFor(e);
 			if (ret == null)
-				return proj.getTool();
+				return current;
 			else
 				return ret;
 		}
@@ -580,7 +591,8 @@ public class Canvas extends JPanel implements LocaleListener, CanvasPaneContents
 			if (AppPreferences.SHOW_TICK_RATE.getBoolean()) {
 				String hz = tickCounter.getTickRate();
 				if (hz != null && !hz.equals("")) {
-					g.setFont(TICK_RATE_FONT);
+					float scale = myListener.getGlobalFontScale();
+					g.setFont(TICK_RATE_FONT.deriveFont(TICK_RATE_FONT.getSize2D() * scale));
 					FontMetrics fm = g.getFontMetrics();
 					int x = getWidth() - fm.stringWidth(hz) - 10;
 					int y = fm.getAscent() + 5;
@@ -593,7 +605,8 @@ public class Canvas extends JPanel implements LocaleListener, CanvasPaneContents
 
 		private void paintString(Graphics g, String msg) {
 			Font old = g.getFont();
-			g.setFont(old.deriveFont(Font.BOLD).deriveFont(18.0f));
+			float scale = myListener.getGlobalFontScale();
+			g.setFont(old.deriveFont(Font.BOLD).deriveFont(18.0f * scale));
 			FontMetrics fm = g.getFontMetrics();
 			int x = (getWidth() - fm.stringWidth(msg)) / 2;
 			if (x < 0)
@@ -1024,7 +1037,9 @@ public class Canvas extends JPanel implements LocaleListener, CanvasPaneContents
 	//
 	public double getZoomFactor() {
 		CanvasPane pane = canvasPane;
-		return pane == null ? 1.0 : pane.getZoomFactor();
+		double zoom = pane == null ? 1.0 : pane.getZoomFactor();
+		double scale = 1.0;
+		return zoom * scale;
 	}
 
 	boolean ifPaintDirtyReset() {

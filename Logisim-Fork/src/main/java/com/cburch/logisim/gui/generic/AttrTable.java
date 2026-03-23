@@ -36,6 +36,7 @@ import javax.swing.event.TableModelListener;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableModel;
 
+import com.cburch.logisim.prefs.AppPreferences;
 import com.cburch.logisim.util.JDialogOk;
 import com.cburch.logisim.util.JInputComponent;
 import com.cburch.logisim.util.LocaleListener;
@@ -436,10 +437,18 @@ public class AttrTable extends JPanel implements LocaleListener {
 		table = new JTable(tableModel);
 		table.setDefaultEditor(Object.class, editor);
 		table.setTableHeader(null);
-		table.setRowHeight(20);
+		Font tableBaseFont = table.getFont();
+		if (tableBaseFont != null) {
+			Font scaledTableFont = tableBaseFont.deriveFont(AppPreferences.getScaled(tableBaseFont.getSize2D()));
+			table.setFont(scaledTableFont);
+			int rowHeightFromFont = table.getFontMetrics(scaledTableFont).getHeight() + AppPreferences.getScaled(6);
+			table.setRowHeight(Math.max(AppPreferences.getScaled(20), rowHeightFromFont));
+		} else {
+			table.setRowHeight(AppPreferences.getScaled(20));
+		}
 
 		Font baseFont = title.getFont();
-		int titleSize = Math.round(baseFont.getSize() * 1.2f);
+		int titleSize = Math.round(AppPreferences.getScaled(baseFont.getSize() * 1.2f));
 		Font titleFont = baseFont.deriveFont((float) titleSize).deriveFont(Font.BOLD);
 		title.setFont(titleFont);
 		Color bgColor = new Color(240, 240, 240);

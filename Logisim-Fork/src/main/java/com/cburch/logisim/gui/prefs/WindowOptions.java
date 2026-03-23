@@ -7,6 +7,7 @@ import javax.swing.JPanel;
 
 import com.cburch.logisim.data.Direction;
 import com.cburch.logisim.prefs.AppPreferences;
+import com.cburch.logisim.util.StringGetter;
 import com.cburch.logisim.util.TableLayout;
 
 class WindowOptions extends OptionsPanel {
@@ -16,6 +17,16 @@ class WindowOptions extends OptionsPanel {
 	private static final long serialVersionUID = 1043476425449770400L;
 	private PrefBoolean[] checks;
 	private PrefOptionList toolbarPlacement, Refreshrate;
+	private PrefOptionListDouble uiScale;
+
+	private static StringGetter fixed(final String value) {
+		return new StringGetter() {
+			@Override
+			public String get() {
+				return value;
+			}
+		};
+	}
 
 	public WindowOptions(PreferencesFrame window) {
 		super(window);
@@ -35,12 +46,21 @@ class WindowOptions extends OptionsPanel {
 						new PrefOption("30", Strings.getter("30Hz")), new PrefOption("60", Strings.getter("60Hz")),
 						new PrefOption("120", Strings.getter("120Hz")),
 						new PrefOption("144", Strings.getter("144Hz")) });
+		uiScale = new PrefOptionListDouble(AppPreferences.UI_SCALE, fixed("UI Scale"),
+				new PrefOption[] { new PrefOption(Double.valueOf(0.75), fixed("75%")),
+						new PrefOption(Double.valueOf(1.0), fixed("100%")),
+						new PrefOption(Double.valueOf(1.25), fixed("125%")),
+						new PrefOption(Double.valueOf(1.5), fixed("150%")),
+						new PrefOption(Double.valueOf(1.75), fixed("175%")),
+						new PrefOption(Double.valueOf(2.0), fixed("200%")) });
 		JPanel panel = new JPanel(new TableLayout(2));
 
 		panel.add(toolbarPlacement.getJLabel());
 		panel.add(toolbarPlacement.getJComboBox());
 		panel.add(Refreshrate.getJLabel());
 		panel.add(Refreshrate.getJComboBox());
+		panel.add(uiScale.getJLabel());
+		panel.add(uiScale.getJComboBox());
 		setLayout(new TableLayout(1));
 		for (int i = 0; i < checks.length; i++) {
 			add(checks[i]);
@@ -65,5 +85,6 @@ class WindowOptions extends OptionsPanel {
 		}
 		toolbarPlacement.localeChanged();
 		Refreshrate.localeChanged();
+		uiScale.localeChanged();
 	}
 }

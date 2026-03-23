@@ -145,7 +145,8 @@ public class HorizontalSplitPane extends JPanel {
 
 			comp0.setBounds(in.left, in.top, maxWidth, split);
 			comp1.setBounds(in.left, in.top + split, maxWidth, maxHeight - split);
-			dragbar.setBounds(in.left, in.top + split - DRAG_TOLERANCE, maxWidth, 2 * DRAG_TOLERANCE);
+			int dragTolerance = getDragTolerance();
+			dragbar.setBounds(in.left, in.top + split - dragTolerance, maxWidth, 2 * dragTolerance);
 		}
 
 		@Override
@@ -184,7 +185,9 @@ public class HorizontalSplitPane extends JPanel {
 	 */
 	private static final long serialVersionUID = -8977009017954942590L;
 
-	static final int DRAG_TOLERANCE = 3;
+	static int getDragTolerance() {
+		return AppPreferences.getScaled(3);
+	}
 
 	private static final Color DRAG_COLOR = new Color(0, 0, 0, 128);
 

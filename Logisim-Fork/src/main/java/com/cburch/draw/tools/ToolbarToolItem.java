@@ -7,10 +7,12 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 
 import javax.swing.Icon;
 
 import com.cburch.draw.toolbar.ToolbarItem;
+import com.cburch.logisim.prefs.AppPreferences;
 
 public class ToolbarToolItem implements ToolbarItem {
 	private AbstractTool tool;
@@ -24,9 +26,11 @@ public class ToolbarToolItem implements ToolbarItem {
 	@Override
 	public Dimension getDimension(Object orientation) {
 		if (icon == null) {
-			return new Dimension(16, 16);
+			int size = AppPreferences.getScaled(16);
+			return new Dimension(size, size);
 		} else {
-			return new Dimension(icon.getIconWidth() + 8, icon.getIconHeight() + 8);
+			return new Dimension(AppPreferences.getScaled(icon.getIconWidth() + 8),
+					AppPreferences.getScaled(icon.getIconHeight() + 8));
 		}
 	}
 
@@ -47,14 +51,25 @@ public class ToolbarToolItem implements ToolbarItem {
 	@Override
 	public void paintIcon(Component destination, Graphics g) {
 		if (icon == null) {
+			int x = AppPreferences.getScaled(4);
+			int box = AppPreferences.getScaled(8);
+			int x2 = AppPreferences.getScaled(12);
 			g.setColor(new Color(255, 128, 128));
-			g.fillRect(4, 4, 8, 8);
+			g.fillRect(x, x, box, box);
 			g.setColor(Color.BLACK);
-			g.drawLine(4, 4, 12, 12);
-			g.drawLine(4, 12, 12, 4);
-			g.drawRect(4, 4, 8, 8);
+			g.drawLine(x, x, x2, x2);
+			g.drawLine(x, x2, x2, x);
+			g.drawRect(x, x, box, box);
 		} else {
-			icon.paintIcon(destination, g, 4, 4);
+			double scale = AppPreferences.getUiScaleFactor();
+			if (g instanceof Graphics2D && scale != 1.0) {
+				Graphics2D g2 = (Graphics2D) g.create();
+				g2.scale(scale, scale);
+				icon.paintIcon(destination, g2, 4, 4);
+				g2.dispose();
+			} else {
+				icon.paintIcon(destination, g, 4, 4);
+			}
 		}
 	}
 }

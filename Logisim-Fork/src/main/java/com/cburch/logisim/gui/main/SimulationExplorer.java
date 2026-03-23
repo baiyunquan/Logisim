@@ -4,6 +4,7 @@
 package com.cburch.logisim.gui.main;
 
 import java.awt.BorderLayout;
+import java.awt.Font;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 
@@ -15,6 +16,7 @@ import javax.swing.tree.TreePath;
 import com.cburch.draw.toolbar.Toolbar;
 import com.cburch.logisim.circuit.CircuitState;
 import com.cburch.logisim.circuit.Simulator;
+import com.cburch.logisim.prefs.AppPreferences;
 import com.cburch.logisim.proj.Project;
 import com.cburch.logisim.proj.ProjectEvent;
 import com.cburch.logisim.proj.ProjectListener;
@@ -39,6 +41,10 @@ class SimulationExplorer extends JPanel implements ProjectListener, MouseListene
 		model = new SimulationTreeModel(proj.getSimulator().getCircuitState());
 		model.setCurrentView(project.getCircuitState());
 		tree = new JTree(model);
+		Font baseFont = tree.getFont();
+		if (baseFont != null) {
+			tree.setFont(baseFont.deriveFont(AppPreferences.getScaled(baseFont.getSize2D())));
+		}
 		tree.setCellRenderer(new SimulationTreeRenderer());
 		tree.addMouseListener(this);
 		tree.setToggleClickCount(3);

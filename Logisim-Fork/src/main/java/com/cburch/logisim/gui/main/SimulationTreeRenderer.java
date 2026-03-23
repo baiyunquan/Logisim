@@ -14,6 +14,7 @@ import javax.swing.tree.DefaultTreeCellRenderer;
 
 import com.cburch.logisim.comp.ComponentDrawContext;
 import com.cburch.logisim.comp.ComponentFactory;
+import com.cburch.logisim.prefs.AppPreferences;
 
 public class SimulationTreeRenderer extends DefaultTreeCellRenderer {
 	private static class RendererIcon implements Icon {
@@ -27,31 +28,39 @@ public class SimulationTreeRenderer extends DefaultTreeCellRenderer {
 
 		@Override
 		public int getIconHeight() {
-			return 20;
+			return AppPreferences.getScaled(20);
 		}
 
 		@Override
 		public int getIconWidth() {
-			return 20;
+			return AppPreferences.getScaled(20);
 		}
 
 		@Override
 		public void paintIcon(Component c, Graphics g, int x, int y) {
-			ComponentDrawContext context = new ComponentDrawContext(c, null, null, g, g);
-			factory.paintIcon(context, x, y, factory.createAttributeSet());
+			double scale = AppPreferences.getUiScaleFactor();
+			int sx = (int) Math.round(x / scale);
+			int sy = (int) Math.round(y / scale);
+			Graphics gScaled = g.create();
+			if (gScaled instanceof java.awt.Graphics2D && scale != 1.0) {
+				((java.awt.Graphics2D) gScaled).scale(scale, scale);
+			}
+			ComponentDrawContext context = new ComponentDrawContext(c, null, null, gScaled, gScaled);
+			factory.paintIcon(context, sx, sy, factory.createAttributeSet());
 
 			// draw magnifying glass if appropriate
 			if (isCurrentView) {
-				int tx = x + 13;
-				int ty = y + 13;
-				int[] xp = { tx - 1, x + 18, x + 20, tx + 1 };
-				int[] yp = { ty + 1, y + 20, y + 18, ty - 1 };
-				g.setColor(ProjectExplorer.MAGNIFYING_INTERIOR);
-				g.fillOval(x + 5, y + 5, 10, 10);
-				g.setColor(Color.BLACK);
-				g.drawOval(x + 5, y + 5, 10, 10);
-				g.fillPolygon(xp, yp, xp.length);
+				int tx = sx + 13;
+				int ty = sy + 13;
+				int[] xp = { tx - 1, sx + 18, sx + 20, tx + 1 };
+				int[] yp = { ty + 1, sy + 20, sy + 18, ty - 1 };
+				gScaled.setColor(ProjectExplorer.MAGNIFYING_INTERIOR);
+				gScaled.fillOval(sx + 5, sy + 5, 10, 10);
+				gScaled.setColor(Color.BLACK);
+				gScaled.drawOval(sx + 5, sy + 5, 10, 10);
+				gScaled.fillPolygon(xp, yp, xp.length);
 			}
+			gScaled.dispose();
 		}
 	}
 

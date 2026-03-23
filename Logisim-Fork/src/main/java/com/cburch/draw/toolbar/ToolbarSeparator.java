@@ -8,6 +8,8 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Graphics;
 
+import com.cburch.logisim.prefs.AppPreferences;
+
 public class ToolbarSeparator implements ToolbarItem {
 	private int size;
 
@@ -17,7 +19,8 @@ public class ToolbarSeparator implements ToolbarItem {
 
 	@Override
 	public Dimension getDimension(Object orientation) {
-		return new Dimension(size, size);
+		int scaled = AppPreferences.getScaled(size);
+		return new Dimension(scaled, scaled);
 	}
 
 	@Override

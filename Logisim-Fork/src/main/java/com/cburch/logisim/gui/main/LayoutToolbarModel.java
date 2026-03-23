@@ -8,6 +8,7 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Frame;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
@@ -98,7 +99,8 @@ class LayoutToolbarModel extends AbstractToolbarModel {
 
 		@Override
 		public Dimension getDimension(Object orientation) {
-			return new Dimension(24, 24);
+			int size = AppPreferences.getScaled(24);
+			return new Dimension(size, size);
 		}
 
 		@Override
@@ -127,18 +129,25 @@ class LayoutToolbarModel extends AbstractToolbarModel {
 
 		@Override
 		public void paintIcon(Component destination, Graphics g) {
+			Graphics gScaled = g.create();
+			double scale = AppPreferences.getUiScaleFactor();
+			if (gScaled instanceof Graphics2D && scale != 1.0) {
+				((Graphics2D) gScaled).scale(scale, scale);
+			}
+
 			// draw halo
 			if (tool == haloedTool && AppPreferences.ATTRIBUTE_HALO.getBoolean()) {
-				g.setColor(Canvas.HALO_COLOR);
-				g.fillRect(1, 1, 22, 22);
+				gScaled.setColor(Canvas.HALO_COLOR);
+				gScaled.fillRect(1, 1, 22, 22);
 			}
 
 			// draw tool icon
-			g.setColor(Color.BLACK);
-			Graphics g_copy = g.create();
-			ComponentDrawContext c = new ComponentDrawContext(destination, null, null, g, g_copy);
+			gScaled.setColor(Color.BLACK);
+			Graphics g_copy = gScaled.create();
+			ComponentDrawContext c = new ComponentDrawContext(destination, null, null, gScaled, g_copy);
 			tool.paintIcon(c, 2, 2);
 			g_copy.dispose();
+			gScaled.dispose();
 		}
 	}
 
