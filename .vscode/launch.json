@@ -1,0 +1,99 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+    
+        {
+            "type": "java",
+            "name": "Current File",
+            "request": "launch",
+            "mainClass": "${file}"
+        },
+        {
+            "type": "java",
+            "name": "Main",
+            "request": "launch",
+            "mainClass": "src.main.java.com.cburch.draw.gui.Main",
+            "projectName": "Logisim-Fork"
+        },
+        {
+            "type": "java",
+            "name": "Test",
+            "request": "launch",
+            "mainClass": "src.main.java.com.cburch.hex.Test",
+            "projectName": "Logisim-Fork"
+        },
+        {
+            "type": "java",
+            "name": "Main(1)",
+            "request": "launch",
+            "mainClass": "src.main.java.com.cburch.logisim.Main",
+            "projectName": "Logisim-Fork"
+        },
+        {
+            "type": "java",
+            "name": "Analyzer",
+            "request": "launch",
+            "mainClass": "src.main.java.com.cburch.logisim.analyze.gui.Analyzer",
+            "projectName": "Logisim-Fork"
+        },
+        {
+            "type": "java",
+            "name": "ArraySet",
+            "request": "launch",
+            "mainClass": "src.main.java.com.cburch.logisim.util.ArraySet",
+            "projectName": "Logisim-Fork"
+        },
+        {
+            "type": "java",
+            "name": "SmallSet",
+            "request": "launch",
+            "mainClass": "src.main.java.com.cburch.logisim.util.SmallSet",
+            "projectName": "Logisim-Fork"
+        },
+        {
+            "type": "java",
+            "name": "Main(2)",
+            "request": "launch",
+            "mainClass": "com.cburch.draw.gui.Main",
+            "projectName": "Logisim"
+        },
+        {
+            "type": "java",
+            "name": "Test(1)",
+            "request": "launch",
+            "mainClass": "com.cburch.hex.Test",
+            "projectName": "Logisim"
+        },
+        {
+            "type": "java",
+            "name": "Main(3)",
+            "request": "launch",
+            "mainClass": "com.cburch.logisim.Main",
+            "projectName": "Logisim"
+        },
+        {
+            "type": "java",
+            "name": "Analyzer(1)",
+            "request": "launch",
+            "mainClass": "com.cburch.logisim.analyze.gui.Analyzer",
+            "projectName": "Logisim"
+        },
+        {
+            "type": "java",
+            "name": "ArraySet(1)",
+            "request": "launch",
+            "mainClass": "com.cburch.logisim.util.ArraySet",
+            "projectName": "Logisim"
+        },
+        {
+            "type": "java",
+            "name": "SmallSet(1)",
+            "request": "launch",
+            "mainClass": "com.cburch.logisim.util.SmallSet",
+            "projectName": "Logisim"
+        }
+    ]
+}

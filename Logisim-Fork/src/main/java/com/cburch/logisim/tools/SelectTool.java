@@ -320,8 +320,43 @@ public class SelectTool extends Tool {
 		return true;
 	}
 
+	private int getKeyboardScrollStep(Canvas canvas) {
+		double zoom = canvas.getZoomFactor();
+		int step = (int) Math.round(40 * zoom);
+		return Math.max(20, Math.min(step, 300));
+	}
+	
 	@Override
 	public void keyPressed(Canvas canvas, KeyEvent e) {
+
+		int currentX = canvas.getHorizzontalScrollBar();
+		int currentY = canvas.getVerticalScrollBar();
+		int scrollStep = getKeyboardScrollStep(canvas);
+		switch (e.getKeyCode()) {
+			case KeyEvent.VK_W:
+				canvas.setScrollBar(currentX, currentY - scrollStep);
+				canvas.setArrows();
+				e.consume();
+				break;
+			case KeyEvent.VK_S:
+				canvas.setScrollBar(currentX, currentY + scrollStep);
+				canvas.setArrows();
+				e.consume();
+				break;
+			case KeyEvent.VK_A:
+				canvas.setScrollBar(currentX - scrollStep, currentY);
+				canvas.setArrows();
+				e.consume();
+				break;
+			case KeyEvent.VK_D:
+				canvas.setScrollBar(currentX + scrollStep, currentY);
+				canvas.setArrows();
+				e.consume();
+				break;
+		}
+
+		
+		
 		if (state == MOVING && e.getKeyCode() == KeyEvent.VK_SHIFT) {
 			handleMoveDrag(canvas, curDx, curDy, e.getModifiersEx());
 		} else {

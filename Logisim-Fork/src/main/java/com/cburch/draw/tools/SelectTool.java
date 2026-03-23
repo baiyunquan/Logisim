@@ -227,6 +227,7 @@ public class SelectTool extends AbstractTool {
 	public Icon getIcon() {
 		return Icons.getIcon("select.gif");
 	}
+	
 
 	@Override
 	public void keyPressed(Canvas canvas, KeyEvent e) {
@@ -235,6 +236,7 @@ public class SelectTool extends AbstractTool {
 				&& curAction != IDLE) {
 			setMouse(canvas, lastMouseX, lastMouseY, e.getModifiersEx());
 		}
+		
 	}
 
 	@Override
