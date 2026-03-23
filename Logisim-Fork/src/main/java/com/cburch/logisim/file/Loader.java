@@ -278,6 +278,7 @@ public class Loader implements LibraryLoader {
 			showMessages(ret);
 			return ret;
 		} catch (LoaderException e) {
+			System.out.println(e.getMessage());
 			throw new LoadFailedException(e.getMessage(), e.isShown());
 		}
 	}
