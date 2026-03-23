@@ -274,6 +274,21 @@ public class AddTool extends Tool {
 		return this.attrs == attrs && attrs instanceof FactoryAttributes
 				&& !((FactoryAttributes) attrs).isFactoryInstantiated();
 	}
+	
+	private void setRotate(Canvas canvas) {
+		ComponentFactory source = getFactory();
+		if (source == null)
+			return;
+		AttributeSet base = getBaseAttributes();
+		Object feature = source.getFeature(ComponentFactory.FACING_ATTRIBUTE_KEY, base);
+		Attribute<Direction> attr = (Attribute<Direction>) feature;
+		if (attr != null) {
+			Direction currentDir = base.getValue(attr);
+			Direction newDir = currentDir.getRight();
+			Action act = ToolAttributeAction.create(this, attr, newDir);
+			canvas.getProject().doAction(act);
+		}
+	}
 
 	@Override
 	public void keyPressed(Canvas canvas, KeyEvent event) {
@@ -298,6 +313,10 @@ public class AddTool extends Tool {
 					canvas.getProject().undoAction();
 					lastAddition = null;
 				}
+				break;
+			case KeyEvent.VK_SPACE:
+				setRotate(canvas);
+				event.consume();
 				break;
 			case KeyEvent.VK_DELETE:
 			case KeyEvent.VK_ESCAPE:

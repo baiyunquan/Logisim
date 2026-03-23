@@ -30,6 +30,13 @@ import com.cburch.logisim.util.StringUtil;
 import com.cburch.logisim.util.ZipClassLoader;
 
 public class Loader implements LibraryLoader {
+	private static void logExceptionToConsole(String context, Throwable error) {
+		System.err.println("[Loader] " + context);
+		if (error != null) {
+			error.printStackTrace(System.err);
+		}
+	}
+
 	private static class JarFileFilter extends FileFilter {
 		@Override
 		public boolean accept(File f) {
@@ -205,6 +212,7 @@ public class Loader implements LibraryLoader {
 		try {
 			retClass = loader.loadClass(className);
 		} catch (ClassNotFoundException e) {
+			logExceptionToConsole("Failed to load class from jar: " + className + " (" + actual + ")", e);
 			throw new LoadFailedException(StringUtil.format(Strings.get("jarClassNotFoundError"), className));
 		}
 		if (!(Library.class.isAssignableFrom(retClass))) {
@@ -216,6 +224,7 @@ public class Loader implements LibraryLoader {
 		try {
 			ret = (Library) retClass.getDeclaredConstructor().newInstance();
 		} catch (Exception e) {
+			logExceptionToConsole("Failed to instantiate library class: " + className + " (" + actual + ")", e);
 			throw new LoadFailedException(StringUtil.format(Strings.get("jarLibraryNotCreatedError"), className));
 		}
 		return ret;
@@ -251,6 +260,7 @@ public class Loader implements LibraryLoader {
 		try {
 			ret = LogisimFile.load(actual, this);
 		} catch (IOException e) {
+			logExceptionToConsole("Failed to load logisim file: " + actual, e);
 			throw new LoadFailedException(
 					StringUtil.format(Strings.get("logisimLoadError"), toProjectName(actual), e.toString()));
 		} finally {
@@ -278,6 +288,7 @@ public class Loader implements LibraryLoader {
 			showMessages(ret);
 			return ret;
 		} catch (LoaderException e) {
+			logExceptionToConsole("Loader exception while opening file: " + file, e);
 			throw new LoadFailedException(e.getMessage(), e.isShown());
 		}
 	}
@@ -296,6 +307,7 @@ public class Loader implements LibraryLoader {
 		try {
 			ret = LogisimFile.load(reader, this);
 		} catch (LoaderException e) {
+			logExceptionToConsole("Loader exception while opening from input stream", e);
 			return null;
 		}
 		showMessages(ret);
@@ -323,6 +335,7 @@ public class Loader implements LibraryLoader {
 			try {
 				MacCompatibility.setFileCreatorAndType(dest, "LGSM", "circ");
 			} catch (IOException e) {
+				logExceptionToConsole("Failed to set file creator/type: " + dest, e);
 			}
 			fwrite = new FileOutputStream(dest);
 			file.write(fwrite, this);
@@ -332,6 +345,7 @@ public class Loader implements LibraryLoader {
 			setMainFile(dest);
 			LibraryManager.instance.fileSaved(this, dest, oldFile, file);
 		} catch (IOException e) {
+			logExceptionToConsole("Failed while saving file: " + dest, e);
 			if (backupCreated)
 				recoverBackup(backup, dest);
 			if (dest.exists() && dest.length() == 0)
@@ -344,6 +358,7 @@ public class Loader implements LibraryLoader {
 				try {
 					fwrite.close();
 				} catch (IOException e) {
+					logExceptionToConsole("Failed to close file output stream: " + dest, e);
 					if (backupCreated)
 						recoverBackup(backup, dest);
 					if (dest.exists() && dest.length() == 0)

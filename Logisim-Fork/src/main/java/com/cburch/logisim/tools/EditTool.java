@@ -282,8 +282,37 @@ public class EditTool extends Tool {
 			updateLocation(canvas, e);
 			e.consume();
 			break;
+		case KeyEvent.VK_SPACE:
+			if (e.getModifiersEx() == 0)
+				attemptRefaceRight(canvas, e);
+			else
+				select.keyPressed(canvas, e);
+			break;
 		default:
 			select.keyPressed(canvas, e);
+		}
+	}
+	
+
+	private void attemptRefaceRight(Canvas canvas, KeyEvent e) {
+		if (e.getModifiersEx() == 0) {
+			final Circuit circuit = canvas.getCircuit();
+			final Selection sel = canvas.getSelection();
+			SetAttributeAction act = new SetAttributeAction(circuit, Strings.getter("selectionRefaceAction"));
+			for (Component comp : sel.getComponents()) {
+				if (!(comp instanceof Wire)) {
+					Attribute<Direction> attr = getFacingAttribute(comp);
+					if (attr != null) {
+						Direction currentDir = comp.getAttributeSet().getValue(attr);
+						Direction newDir = currentDir.getRight();
+						act.set(comp, attr, newDir);
+					}
+				}
+			}
+			if (!act.isEmpty()) {
+				canvas.getProject().doAction(act);
+				e.consume();
+			}
 		}
 	}
 
