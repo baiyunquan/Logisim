@@ -11,6 +11,7 @@ import java.awt.event.MouseListener;
 
 import javax.swing.JComponent;
 
+import com.cburch.draw.tools.ToolbarToolItem;
 import com.cburch.logisim.util.GraphicsUtil;
 
 class ToolbarButton extends JComponent implements MouseListener {
@@ -20,6 +21,7 @@ class ToolbarButton extends JComponent implements MouseListener {
 	private static final long serialVersionUID = 4971644167730175116L;
 
 	private static final int BORDER = 2;
+	private static final String IGNORE_GLOBAL_SCALE_KEY = "logisim.frame.ignoreGlobalScale";
 
 	private Toolbar toolbar;
 	private ToolbarItem item;
@@ -27,6 +29,12 @@ class ToolbarButton extends JComponent implements MouseListener {
 	ToolbarButton(Toolbar toolbar, ToolbarItem item) {
 		this.toolbar = toolbar;
 		this.item = item;
+		if (item instanceof ToolbarToolItem) {
+			ToolbarToolItem toolItem = (ToolbarToolItem) item;
+			if (toolItem.isIgnoreGlobalScale()) {
+				putClientProperty(IGNORE_GLOBAL_SCALE_KEY, Boolean.TRUE);
+			}
+		}
 		addMouseListener(this);
 		setFocusable(true);
 		setToolTipText("");

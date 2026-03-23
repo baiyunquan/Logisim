@@ -11,6 +11,7 @@ import java.awt.event.MouseEvent;
 
 import javax.swing.Icon;
 import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
 
 import com.cburch.logisim.LogisimVersion;
 import com.cburch.logisim.circuit.Circuit;
@@ -133,6 +134,18 @@ public class AddTool extends Tool {
 				return null;
 			} else {
 				return base.getTool("Edit Tool");
+			}
+		}
+	}
+
+	private void cancelAddMode(Canvas canvas) {
+		Project proj = canvas.getProject();
+		Tool next = determineNext(proj);
+		if (next != null) {
+			proj.setTool(next);
+			Action act = SelectionActions.dropAll(canvas.getSelection());
+			if (act != null) {
+				proj.doAction(act);
 			}
 		}
 	}
@@ -281,7 +294,7 @@ public class AddTool extends Tool {
 
 		if (!event.isConsumed() && event.getModifiersEx() == 0) {
 			switch (event.getKeyCode()) {
-			case KeyEvent.VK_UP:
+/* 			case KeyEvent.VK_UP:
 				setFacing(canvas, Direction.NORTH);
 				break;
 			case KeyEvent.VK_DOWN:
@@ -292,6 +305,10 @@ public class AddTool extends Tool {
 				break;
 			case KeyEvent.VK_RIGHT:
 				setFacing(canvas, Direction.EAST);
+				break;*/
+			case KeyEvent.VK_SPACE:
+				setRotate(canvas);
+				event.consume();
 				break;
 			case KeyEvent.VK_BACK_SPACE:
 				if (lastAddition != null && canvas.getProject().getLastAction() == lastAddition) {
@@ -302,15 +319,7 @@ public class AddTool extends Tool {
 			case KeyEvent.VK_DELETE:
 			case KeyEvent.VK_ESCAPE:
 				if (state == SHOW_GHOST) {
-					Project proj = canvas.getProject();
-					Tool next = determineNext(proj);
-					if (next != null) {
-						proj.setTool(next);
-						Action act = SelectionActions.dropAll(canvas.getSelection());
-						if (act != null) {
-							proj.doAction(act);
-						}
-					}
+					cancelAddMode(canvas);
 				}
 				break;
 			}
@@ -369,6 +378,14 @@ public class AddTool extends Tool {
 
 	@Override
 	public void mousePressed(Canvas canvas, Graphics g, MouseEvent e) {
+		if (SwingUtilities.isRightMouseButton(e) || e.isPopupTrigger()) {
+			cancelAddMode(canvas);
+			return;
+		}
+		if (!SwingUtilities.isLeftMouseButton(e)) {
+			return;
+		}
+
 		// verify the addition would be valid
 		Circuit circ = canvas.getCircuit();
 		if (!canvas.getProject().getLogisimFile().contains(circ)) {
@@ -392,6 +409,10 @@ public class AddTool extends Tool {
 
 	@Override
 	public void mouseReleased(Canvas canvas, Graphics g, MouseEvent e) {
+		if (!SwingUtilities.isLeftMouseButton(e)) {
+			return;
+		}
+
 		Component added = null;
 		if (state == SHOW_ADD) {
 			Circuit circ = canvas.getCircuit();
@@ -510,6 +531,21 @@ public class AddTool extends Tool {
 		Attribute<Direction> attr = (Attribute<Direction>) feature;
 		if (attr != null) {
 			Action act = ToolAttributeAction.create(this, attr, facing);
+			canvas.getProject().doAction(act);
+		}
+	}
+
+	private void setRotate(Canvas canvas) {
+		ComponentFactory source = getFactory();
+		if (source == null)
+			return;
+		AttributeSet base = getBaseAttributes();
+		Object feature = source.getFeature(ComponentFactory.FACING_ATTRIBUTE_KEY, base);
+		Attribute<Direction> attr = (Attribute<Direction>) feature;
+		if (attr != null) {
+			Direction currentDir = base.getValue(attr);
+			Direction newDir = currentDir.getRight();
+			Action act = ToolAttributeAction.create(this, attr, newDir);
 			canvas.getProject().doAction(act);
 		}
 	}

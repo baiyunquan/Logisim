@@ -5,12 +5,15 @@ package com.cburch.logisim.gui.main;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.GraphicsConfiguration;
 import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
 import java.awt.IllegalComponentStateException;
+import java.awt.Insets;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.WindowAdapter;
@@ -20,6 +23,10 @@ import java.beans.PropertyChangeListener;
 import java.io.File;
 
 import javax.swing.JOptionPane;
+import javax.swing.AbstractButton;
+import javax.swing.JComponent;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
 import javax.swing.JPanel;
 import javax.swing.WindowConstants;
 import javax.swing.event.ChangeEvent;
@@ -31,7 +38,6 @@ import com.cburch.logisim.Main;
 import com.cburch.logisim.circuit.Circuit;
 import com.cburch.logisim.circuit.CircuitEvent;
 import com.cburch.logisim.circuit.CircuitListener;
-import com.cburch.logisim.comp.Component;
 import com.cburch.logisim.data.AttributeEvent;
 import com.cburch.logisim.data.AttributeSet;
 import com.cburch.logisim.data.Direction;
@@ -190,6 +196,39 @@ public class Frame extends LFrame implements LocaleListener {
 	public static final double STEP_ZOOM = 10;
 
 	public static final double MAX_ZOOM = 400;
+	private static final String BASE_FONT_SIZE_KEY = "logisim.frame.baseFontSize";
+	private static final String BASE_MARGIN_KEY = "logisim.frame.baseMargin";
+	private static final String BASE_PREF_SIZE_KEY = "logisim.frame.basePreferredSize";
+	private static final String IGNORE_GLOBAL_SCALE_KEY = "logisim.frame.ignoreGlobalScale";
+	public static double GLOBAL_FONT_SCALE = 2.0;
+	public static double GLOBAL_DISPLAY_SCALE = 2.0;
+
+	public static double getGlobalFontScale() {
+		double scale = GLOBAL_FONT_SCALE;
+		if (Double.isNaN(scale) || Double.isInfinite(scale)) {
+			scale = 1.0;
+		}
+		return Math.max(0.5, Math.min(scale, 3.0));
+	}
+
+	public static double getGlobalDisplayScale() {
+		double scale = GLOBAL_DISPLAY_SCALE;
+		if (Double.isNaN(scale) || Double.isInfinite(scale)) {
+			scale = 1.0;
+		}
+		return Math.max(0.25, Math.min(scale, 4.0));
+	}
+
+	public static void setGlobalScale(double fontScale, double displayScale) {
+		GLOBAL_FONT_SCALE = fontScale;
+		GLOBAL_DISPLAY_SCALE = displayScale;
+		for (Project p : Projects.getOpenProjects()) {
+			Frame f = p.getFrame();
+			if (f != null) {
+				f.applyGlobalScaleToControls();
+			}
+		}
+	}
 
 	private static Point getInitialLocation() {
 		String s = AppPreferences.WINDOW_LOCATION.get();
@@ -369,8 +408,87 @@ public class Frame extends LFrame implements LocaleListener {
 		AppPreferences.NEW_TOOLBAR.addPropertyChangeListener(myProjectListener);
 		placeToolbar();
 		((MenuListener.EnabledListener) projectToolbarModel).menuEnableChanged(menuListener);
+		applyGlobalScaleToControls();
 
 		LocaleManager.addLocaleListener(this);
+	}
+
+	private void applyGlobalScaleToControls() {
+		JMenuBar bar = getJMenuBar();
+		if (bar != null) {
+			applyScaleRecursively(bar);
+		}
+		applyScaleRecursively(getContentPane());
+		layoutCanvas.computeSize(true);
+		layoutCanvas.setArrows();
+		revalidate();
+		repaint();
+	}
+
+	private void applyScaleRecursively(Component comp) {
+		if (comp == null || !(comp instanceof JComponent)) {
+			return;
+		}
+
+		double fontScale = getGlobalFontScale();
+		double displayScale = getGlobalDisplayScale();
+		JComponent jc = (JComponent) comp;
+		if (Boolean.TRUE.equals(jc.getClientProperty(IGNORE_GLOBAL_SCALE_KEY))) {
+			return;
+		}
+
+		Font font = jc.getFont();
+		if (font != null) {
+			Float baseSize = (Float) jc.getClientProperty(BASE_FONT_SIZE_KEY);
+			if (baseSize == null) {
+				baseSize = Float.valueOf(font.getSize2D());
+				jc.putClientProperty(BASE_FONT_SIZE_KEY, baseSize);
+			}
+			jc.setFont(font.deriveFont((float) (baseSize.floatValue() * fontScale)));
+		}
+
+		Dimension basePref = (Dimension) jc.getClientProperty(BASE_PREF_SIZE_KEY);
+		if (basePref == null) {
+			Dimension pref = jc.getPreferredSize();
+			if (pref != null) {
+				basePref = new Dimension(pref);
+				jc.putClientProperty(BASE_PREF_SIZE_KEY, basePref);
+			}
+		}
+		if (basePref != null) {
+			jc.setPreferredSize(new Dimension((int) Math.round(basePref.width * displayScale),
+					(int) Math.round(basePref.height * displayScale)));
+		}
+
+		if (jc instanceof AbstractButton) {
+			AbstractButton button = (AbstractButton) jc;
+			Insets base = (Insets) jc.getClientProperty(BASE_MARGIN_KEY);
+			if (base == null) {
+				Insets margin = button.getMargin();
+				if (margin != null) {
+					base = new Insets(margin.top, margin.left, margin.bottom, margin.right);
+					jc.putClientProperty(BASE_MARGIN_KEY, base);
+				}
+			}
+			if (base != null) {
+				button.setMargin(new Insets((int) Math.round(base.top * displayScale),
+						(int) Math.round(base.left * displayScale),
+						(int) Math.round(base.bottom * displayScale),
+						(int) Math.round(base.right * displayScale)));
+			}
+		}
+
+		if (jc instanceof JMenu) {
+			for (Component child : ((JMenu) jc).getMenuComponents()) {
+				applyScaleRecursively(child);
+			}
+		}
+
+		if (jc instanceof Container) {
+			for (Component child : ((Container) jc).getComponents()) {
+				applyScaleRecursively(child);
+			}
+		}
 	}
 
 	private void computeTitle() {
@@ -510,7 +628,7 @@ public class Frame extends LFrame implements LocaleListener {
 		}
 		if (value instanceof AttrTableComponentModel) {
 			Circuit circ = ((AttrTableComponentModel) value).getCircuit();
-			Component comp = ((AttrTableComponentModel) value).getComponent();
+			com.cburch.logisim.comp.Component comp = ((AttrTableComponentModel) value).getComponent();
 			layoutCanvas.setHaloedComponent(circ, comp);
 		} else {
 			layoutCanvas.setHaloedComponent(null, null);
@@ -591,7 +709,7 @@ public class Frame extends LFrame implements LocaleListener {
 		}
 	}
 
-	public void viewComponentAttributes(Circuit circ, Component comp) {
+	public void viewComponentAttributes(Circuit circ, com.cburch.logisim.comp.Component comp) {
 		if (comp == null) {
 			setAttrTableModel(null);
 		} else {

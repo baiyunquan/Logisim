@@ -43,7 +43,7 @@ class AppearanceToolbarModel extends AbstractToolbarModel implements PropertyCha
 		for (AbstractTool tool : tools) {
 			tool.setCltrIndex(" (" + InputEventUtil.toKeyDisplayString(mask) + "-" + i + ")");
 			i++;
-			rawItems.add(new ToolbarToolItem(tool));
+			rawItems.add(new ToolbarToolItem(tool, true));
 		}
 		items = Collections.unmodifiableList(rawItems);
 		canvas.addPropertyChangeListener(Canvas.TOOL_PROPERTY, this);

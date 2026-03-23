@@ -178,10 +178,39 @@ public class PokeTool extends Tool {
 
 	@Override
 	public void keyPressed(Canvas canvas, KeyEvent e) {
-		if (pokeCaret != null) {
-			pokeCaret.keyPressed(e);
-			canvas.getProject().repaintCanvas();
+		// pokeCaret == null 时，使用 WASD 移动滚动条
+		int currentX = canvas.getHorizzontalScrollBar();
+		int currentY = canvas.getVerticalScrollBar();
+		int scrollStep = getKeyboardScrollStep(canvas);
+		switch (e.getKeyCode()) {
+			case KeyEvent.VK_W:
+				canvas.setScrollBar(currentX, currentY - scrollStep);
+				canvas.setArrows();
+				e.consume();
+				break;
+			case KeyEvent.VK_S:
+				canvas.setScrollBar(currentX, currentY + scrollStep);
+				canvas.setArrows();
+				e.consume();
+				break;
+			case KeyEvent.VK_A:
+				canvas.setScrollBar(currentX - scrollStep, currentY);
+				canvas.setArrows();
+				e.consume();
+				break;
+			case KeyEvent.VK_D:
+				canvas.setScrollBar(currentX + scrollStep, currentY);
+				canvas.setArrows();
+				e.consume();
+				break;
 		}
+
+	}
+
+	private int getKeyboardScrollStep(Canvas canvas) {
+		double zoom = canvas.getZoomFactor();
+		int step = (int) Math.round(40 * zoom);
+		return Math.max(20, Math.min(step, 300));
 	}
 
 	@Override
@@ -232,6 +261,9 @@ public class PokeTool extends Tool {
 
 	@Override
 	public void mousePressed(Canvas canvas, Graphics g, MouseEvent e) {
+		if(canvas == null) {
+			return;
+		}
 		this.x0 = (int) canvas.getMousePosition().getX();
 		this.y0 = (int) canvas.getMousePosition().getY();
 		this.x = e.getX();

@@ -15,10 +15,16 @@ import com.cburch.draw.toolbar.ToolbarItem;
 public class ToolbarToolItem implements ToolbarItem {
 	private AbstractTool tool;
 	private Icon icon;
+	private boolean ignoreGlobalScale;
 
 	public ToolbarToolItem(AbstractTool tool) {
+		this(tool, false);
+	}
+
+	public ToolbarToolItem(AbstractTool tool, boolean ignoreGlobalScale) {
 		this.tool = tool;
 		this.icon = tool.getIcon();
+		this.ignoreGlobalScale = ignoreGlobalScale;
 	}
 
 	@Override
@@ -32,6 +38,10 @@ public class ToolbarToolItem implements ToolbarItem {
 
 	public AbstractTool getTool() {
 		return tool;
+	}
+
+	public boolean isIgnoreGlobalScale() {
+		return ignoreGlobalScale;
 	}
 
 	@Override

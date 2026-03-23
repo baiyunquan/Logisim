@@ -133,7 +133,9 @@ class XmlReader {
 					} catch (NumberFormatException e) {
 						if (messages == null)
 							messages = new ArrayList<String>();
-						messages.add(StringUtil.format(Strings.get("attrValueInvalidError"), attrVal, attrName));
+						String errorMsg = StringUtil.format(Strings.get("attrValueInvalidError"), attrVal, attrName);
+						messages.add(errorMsg);
+						System.err.println("Error parsing attribute '" + attrName + "' with value '" + attrVal + "': " + e.getMessage());
 					}
 				}
 			}
